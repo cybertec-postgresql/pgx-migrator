@@ -1,3 +1,7 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/cybertec-postgresql/pgx-migrator.svg)](https://pkg.go.dev/github.com/cybertec-postgresql/pgx-migrator)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cybertec-postgresql/pgx-migrator)](https://goreportcard.com/report/github.com/cybertec-postgresql/pgx-migrator)
+[![Coverage Status](https://coveralls.io/repos/github/cybertec-postgresql/pgx-migrator/badge.svg?branch=main)](https://coveralls.io/github/cybertec-postgresql/pgx-migrator?branch=main)
+
 # pgx-migrator
 
 Simple [pgx](https://github.com/jackc/pgx) oriented [PostgreSQL](https://www.postgresql.org/) schema migration library for Go based on [lopezator/migrator](https://github.com/lopezator/migrator).
