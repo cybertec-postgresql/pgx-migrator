@@ -15,7 +15,6 @@ type PgxIface interface {
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 	Query(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error)
-	Ping(ctx context.Context) error
 }
 
 const defaultTableName = "migrations"
