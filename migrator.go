@@ -63,7 +63,7 @@ func New(opts ...Option) (*Migrator, error) {
 	}
 
 	if len(m.migrations) == 0 {
-		return nil, errors.New("Migrations must be provided")
+		return nil, errors.New("migrations must be provided")
 	}
 
 	for _, m := range m.migrations {
@@ -71,7 +71,7 @@ func New(opts ...Option) (*Migrator, error) {
 		case *Migration:
 		case *MigrationNoTx:
 		default:
-			return nil, errors.New("Invalid migration type")
+			return nil, errors.New("invalid migration type")
 		}
 	}
 
@@ -103,11 +103,11 @@ func (m *Migrator) Migrate(ctx context.Context, db PgxIface) error {
 		switch mm := migration.(type) {
 		case *Migration:
 			if err := migrate(ctx, db, insertVersion, mm, m.onNotice); err != nil {
-				return fmt.Errorf("Error while running migrations: %w", err)
+				return fmt.Errorf("error while running migrations: %w", err)
 			}
 		case *MigrationNoTx:
 			if err := migrateNoTx(ctx, db, insertVersion, mm, m.onNotice); err != nil {
-				return fmt.Errorf("Error while running migrations: %w", err)
+				return fmt.Errorf("error while running migrations: %w", err)
 			}
 		}
 	}
@@ -185,7 +185,7 @@ func migrate(ctx context.Context, db PgxIface, insertVersion string, migration *
 	defer func() {
 		if err != nil {
 			if errRb := tx.Rollback(ctx); errRb != nil {
-				err = fmt.Errorf("Error rolling back: %s\n%s", errRb, err)
+				err = fmt.Errorf("error rolling back: %s\n%s", errRb, err)
 			}
 			return
 		}
@@ -193,10 +193,10 @@ func migrate(ctx context.Context, db PgxIface, insertVersion string, migration *
 	}()
 	notice(fmt.Sprintf("Applying migration named '%s'...", migration.Name))
 	if err = migration.Func(ctx, tx); err != nil {
-		return fmt.Errorf("Error executing golang migration: %w", err)
+		return fmt.Errorf("error executing golang migration: %w", err)
 	}
 	if _, err = tx.Exec(ctx, insertVersion); err != nil {
-		return fmt.Errorf("Error updating migration versions: %w", err)
+		return fmt.Errorf("error updating migration versions: %w", err)
 	}
 	notice(fmt.Sprintf("Applied migration named '%s'", migration.Name))
 
@@ -206,10 +206,10 @@ func migrate(ctx context.Context, db PgxIface, insertVersion string, migration *
 func migrateNoTx(ctx context.Context, db PgxIface, insertVersion string, migration *MigrationNoTx, notice func(string)) error {
 	notice(fmt.Sprintf("Applying no tx migration named '%s'...", migration.Name))
 	if err := migration.Func(ctx, db); err != nil {
-		return fmt.Errorf("Error executing golang migration: %w", err)
+		return fmt.Errorf("error executing golang migration: %w", err)
 	}
 	if _, err := db.Exec(ctx, insertVersion); err != nil {
-		return fmt.Errorf("Error updating migration versions: %w", err)
+		return fmt.Errorf("error updating migration versions: %w", err)
 	}
 	notice(fmt.Sprintf("Applied no tx migration named '%s'...", migration.Name))
 
