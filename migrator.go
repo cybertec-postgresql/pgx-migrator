@@ -12,9 +12,9 @@ import (
 // PgxIface is interface for database connection or transaction
 type PgxIface interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
-	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
-	QueryRow(context.Context, string, ...interface{}) pgx.Row
-	Query(ctx context.Context, query string, args ...interface{}) (pgx.Rows, error)
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+	QueryRow(context.Context, string, ...any) pgx.Row
+	Query(ctx context.Context, query string, args ...any) (pgx.Rows, error)
 }
 
 const defaultTableName = "migrations"
@@ -22,7 +22,7 @@ const defaultTableName = "migrations"
 // Migrator is the migrator implementation
 type Migrator struct {
 	TableName  string
-	migrations []interface{}
+	migrations []any
 	onNotice   func(string)
 }
 
@@ -44,7 +44,7 @@ func SetNotice(noticeFunc func(string)) Option {
 }
 
 // Migrations creates an option with provided migrations
-func Migrations(migrations ...interface{}) Option {
+func Migrations(migrations ...any) Option {
 	return func(m *Migrator) {
 		m.migrations = migrations
 	}
@@ -115,9 +115,14 @@ func (m *Migrator) Migrate(ctx context.Context, db PgxIface) error {
 	return nil
 }
 
+// Count returns total number of migrations
+func (m *Migrator) Count() int {
+	return len(m.migrations)
+}
+
 // Pending returns all pending (not yet applied) migrations and count of migration applied
-func (m *Migrator) Pending(ctx context.Context, db PgxIface) ([]interface{}, int, error) {
-	count, err := countApplied(ctx, db, m.TableName)
+func (m *Migrator) Pending(ctx context.Context, db PgxIface) (pending []any, count int, err error) {
+	err = db.QueryRow(ctx, fmt.Sprintf("SELECT count(*) FROM %s", m.TableName)).Scan(&count)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -128,32 +133,14 @@ func (m *Migrator) Pending(ctx context.Context, db PgxIface) ([]interface{}, int
 }
 
 // NeedUpgrade returns True if database need to be updated with migrations
-func (m *Migrator) NeedUpgrade(ctx context.Context, db PgxIface) (bool, error) {
-	exists, err := tableExists(ctx, db, m.TableName)
+func (m *Migrator) NeedUpgrade(ctx context.Context, db PgxIface) (need bool, err error) {
+	var exists bool
+	err = db.QueryRow(ctx, "SELECT to_regclass($1) IS NOT NULL", m.TableName).Scan(&exists)
 	if !exists {
 		return true, err
 	}
 	mm, _, err := m.Pending(ctx, db)
 	return len(mm) > 0, err
-}
-
-func countApplied(ctx context.Context, db PgxIface, tableName string) (int, error) {
-	// count applied migrations
-	var count int
-	err := db.QueryRow(ctx, fmt.Sprintf("SELECT count(*) FROM %s", tableName)).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-func tableExists(ctx context.Context, db PgxIface, tableName string) (bool, error) {
-	var exists bool
-	err := db.QueryRow(ctx, "SELECT to_regclass($1) IS NOT NULL", tableName).Scan(&exists)
-	if err != nil {
-		return false, err
-	}
-	return exists, nil
 }
 
 // Migration represents a single migration
