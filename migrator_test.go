@@ -8,7 +8,7 @@ import (
 
 	migrator "github.com/cybertec-postgresql/pgx-migrator"
 	pgx "github.com/jackc/pgx/v5"
-	"github.com/pashagolub/pgxmock/v5"
+	"github.com/pashagolub/pgxmock/v6"
 	"github.com/stretchr/testify/assert"
 )
 
