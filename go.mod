@@ -3,7 +3,7 @@ module github.com/cybertec-postgresql/pgx-migrator
 go 1.26.0
 
 require (
-	github.com/jackc/pgx/v5 v5.12.0
+	github.com/jackc/pgx/v5 v5.13.0
 	github.com/pashagolub/pgxmock/v6 v6.0.0-beta2
 	github.com/stretchr/testify v1.12.1
 )
